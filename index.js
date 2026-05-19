@@ -3,12 +3,15 @@ dns.setServers(["8.8.8.8", "8.8.4.4"]);
 const express = require('express');
 const dotenv = require('dotenv')
 const cors = require('cors')
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 dotenv.config()
 const uri = process.env.MONGO_DB_URI;
 const app = express()
 
 const PORT = process.env.PORT;
+
+app.use(cors())
+app.use(express.json())
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -20,14 +23,33 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
-    // Send a ping to confirm a successful connection
+
+    const db = client.db('drivefleet')
+    const carsCollection = db.collection('all-cars')
+
+    app.get('/all-car', async(req, res)=>{
+      const result = await carsCollection.find().toArray()
+      res.json(result)
+    })
+
+    app.get('/all-car/:id', async(req, res)=>{
+      const {id} = await req.params
+      const result = await carsCollection.findOne({_id: new ObjectId(id)})
+      res.json(result)
+    })
+
+    app.get('/featured', async (req, res)=>{
+      const result = await carsCollection.find({availability: true}).limit(6).toArray()
+      res.json(result)
+    })
+
+
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
-    await client.close();
+    // await client.close();
   }
 }
 run().catch(console.dir);
