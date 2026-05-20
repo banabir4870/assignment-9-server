@@ -27,6 +27,7 @@ async function run() {
 
     const db = client.db('drivefleet')
     const carsCollection = db.collection('all-cars')
+    const bookingCollection = db.collection('bookings')
 
     app.get('/all-car', async (req, res) => {
       const result = await carsCollection.find().toArray()
@@ -68,6 +69,27 @@ async function run() {
 
     app.get('/featured', async (req, res) => {
       const result = await carsCollection.find({ availability: true }).limit(6).toArray()
+      res.json(result)
+    })
+
+    app.get('/booking/:userId', async (req, res)=>{
+      const { userId } = req.params
+      const result = await bookingCollection.find({ userId }).toArray();
+      res.json(result)
+
+    })
+
+
+    app.post('/booking', async (req, res) => {
+      const bookingData = req.body
+      const result = await bookingCollection.insertOne(bookingData)
+      res.json(result)
+    })
+
+
+    app.delete('/booking/:bookingId', async(req, res)=>{
+      const {bookingId} = req.params
+      const result = await bookingCollection.deleteOne({_id: new ObjectId(bookingId)})
       res.json(result)
     })
 
