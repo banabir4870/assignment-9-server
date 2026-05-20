@@ -28,25 +28,46 @@ async function run() {
     const db = client.db('drivefleet')
     const carsCollection = db.collection('all-cars')
 
-    app.get('/all-car', async(req, res)=>{
+    app.get('/all-car', async (req, res) => {
       const result = await carsCollection.find().toArray()
       res.json(result)
     })
 
-    app.post('/all-car', async(req, res)=>{
+    app.post('/all-car', async (req, res) => {
       const carData = req.body;
       const result = await carsCollection.insertOne(carData);
       res.json(result);
     })
 
-    app.get('/all-car/:id', async(req, res)=>{
-      const {id} = await req.params
-      const result = await carsCollection.findOne({_id: new ObjectId(id)})
+    
+
+    app.get('/all-car/user/:email', async (req, res) => {
+      const { email } = req.params
+      const result = await carsCollection.find({owner_email: email}).toArray()
       res.json(result)
     })
 
-    app.get('/featured', async (req, res)=>{
-      const result = await carsCollection.find({availability: true}).limit(6).toArray()
+    app.get('/all-car/:id', async (req, res) => {
+      const { id } = await req.params
+      const result = await carsCollection.findOne({ _id: new ObjectId(id) })
+      res.json(result)
+    })
+
+    app.patch('/all-car/:id', async (req, res) => {
+      const { id } = req.params
+      const updatedData = req.body
+      const result = await carsCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedData })
+      res.json(result)
+    })
+
+    app.delete('/all-car/:id', async(req, res)=>{
+      const {id} = req.params;
+      const result = await carsCollection.deleteOne({_id: new ObjectId(id)})
+      res.json(result)
+    })
+
+    app.get('/featured', async (req, res) => {
+      const result = await carsCollection.find({ availability: true }).limit(6).toArray()
       res.json(result)
     })
 
@@ -60,8 +81,8 @@ async function run() {
 }
 run().catch(console.dir);
 
-app.get('/', (req, res)=>{
-    res.send('Server is running fine!')
+app.get('/', (req, res) => {
+  res.send('Server is running fine!')
 })
 
 
@@ -70,6 +91,6 @@ app.get('/', (req, res)=>{
 
 
 
-app.listen(PORT, ()=>{
-    console.log(`Server running on port ${PORT}`)
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
 })
