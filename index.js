@@ -33,6 +33,12 @@ async function run() {
       res.json(result)
     })
 
+    app.post('/all-car', async(req, res)=>{
+      const carData = req.body;
+      const result = await carsCollection.insertOne(carData);
+      res.json(result);
+    })
+
     app.get('/all-car/:id', async(req, res)=>{
       const {id} = await req.params
       const result = await carsCollection.findOne({_id: new ObjectId(id)})
