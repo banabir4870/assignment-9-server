@@ -57,7 +57,16 @@ async function run() {
     const bookingCollection = db.collection('bookings')
 
     app.get('/all-car', async (req, res) => {
-      const result = await carsCollection.find().toArray()
+      const {search, type} = req.query;
+      let query = {};
+      if(search){
+        query.car_name = { $regex: search, $options: 'i' };
+      }
+
+      if(type){
+        query.type = type;
+      }
+      const result = await carsCollection.find(query).toArray()
       res.json(result)
     })
 
@@ -94,7 +103,7 @@ async function run() {
       res.json(result)
     })
 
-    app.get('/featured', verifyToken, async (req, res) => {
+    app.get('/featured', async (req, res) => {
       const result = await carsCollection.find({ availability: true }).limit(6).toArray()
       res.json(result)
     })
