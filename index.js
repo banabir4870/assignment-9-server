@@ -57,18 +57,27 @@ async function run() {
     const bookingCollection = db.collection('bookings')
 
     app.get('/all-car', async (req, res) => {
-      const {search, type} = req.query;
-      let query = {};
-      if(search){
-        query.car_name = { $regex: search, $options: 'i' };
+      try {
+        const { search, type } = req.query;
+        const query = {};
+        if (search) {
+          query.car_name = {
+            $regex: search,
+            $options: 'i'
+          };
+        }
+        if (type) {
+          const typesArray = type.split(',');
+          query.type = {
+            $in: typesArray
+          };
+        }
+        const result = await carsCollection.find(query).toArray();
+        res.json(result);
+      } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
       }
-
-      if(type){
-        query.type = type;
-      }
-      const result = await carsCollection.find(query).toArray()
-      res.json(result)
-    })
+    });
 
     app.post('/all-car', verifyToken, async (req, res) => {
       const carData = req.body;
