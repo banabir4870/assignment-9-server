@@ -110,13 +110,16 @@ const verifyToken = async (req, res, next) => {
       app.post('/booking', verifyToken,async (req, res) => {
         const bookingData = req.body
         const result = await bookingCollection.insertOne(bookingData)
+        await carsCollection.updateOne({_id: new ObjectId(bookingData.carId)}, {$inc: {booking_count: 1}})
         res.json(result)
       })
 
 
       app.delete('/booking/:bookingId', verifyToken,async (req, res) => {
         const { bookingId } = req.params
+        const booking = await bookingCollection.findOne({_id: new ObjectId(bookingId)})
         const result = await bookingCollection.deleteOne({ _id: new ObjectId(bookingId) })
+        await carsCollection.updateOne({_id: new ObjectId(booking.carId)}, {$inc: {booking_count: -1}})
         res.json(result)
       })
 
